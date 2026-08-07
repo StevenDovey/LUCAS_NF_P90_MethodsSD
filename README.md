@@ -2,7 +2,7 @@
 
 ## What this is
 
-An R model of carbon stock and stock change for New Zealand indigenous forest permanent sample plots (PSPs), built from the underlying allometric science rather than ported from the original SAS implementation. Plots are measured across up to three census rounds (2002-2007, 2009 to July 2014, August 2014-2024). The output feeds New Zealand's Emissions Trading Scheme carbon accounting. The earlier SAS-mirroring R code is retained in git history only, under `OLD/`, and is not part of the live pipeline.
+An R model of carbon stock and stock change for New Zealand indigenous forest permanent sample plots (PSPs), built from the underlying allometric science rather than ported from the original SAS implementation. Plots are measured across up to three census rounds (2002-2007, 2009 to July 2014, August 2014-2024). The output feeds New Zealand's Emissions Trading Scheme carbon accounting. An earlier SAS-mirroring R port existed under `OLD/`; it is not part of this repository (its history lives only in the original `sas2r` repository, not here) and is not part of the live pipeline.
 
 ## Running it
 
@@ -86,22 +86,6 @@ The same working-copy treatment applied to the raw `plot_summary.csv` file: an e
 - **`predict_height.R`**: The two-stage height model, a species random-intercept mixed model of log(height minus 1.35) on diameter, then a per-plot bias correction.
 - **`validate.R`**: Data-cleaning stage: flags records against rules and quarantines errors before the carbon calculation. Uses `default_validation_config()` for thresholds.
 - **`validate_deep.R`**: Cross-cycle and reference checks that extend `validate.R`: a per-stem trajectory pass across the three rounds, a height-to-diameter consistency check, a species reference check, and a plot-level stem density check.
-
-### One-off development tools (`dev/tools/`)
-
-Comparison and model-selection tools used during development, not part of the operational run and not part of the `diagnostics/` chain, since most need historical reference files rather than a fresh `run.R` output. `compare_run.R`, `compare_dbh_height.R`, `compare_deadwood.R`, and `compare_fluxes.R` cross-check pipeline output against a reference; `dbh_model_bakeoff.R` and `height_model_bakeoff.R` are the cross-validation runs that selected the current diameter and height model forms; `linecount_diag.R` explains row-count differences between sources; `make_report.R` is an earlier working script, still runnable. `stock_run_v2.R` is dead: it reads `cmp2/SAS_plotsummary_CWD_multiV10.csv`, which does not exist in the repository, and cannot run. Flagged for removal, not yet removed.
-
-### Tests
-
-`dev/tests/test_pipeline.R` and `dev/tests/test_predict.R` are self-contained known-answer tests against hand-computed expected values, run with `Rscript dev/tests/test_pipeline.R`.
-
-### Retained, not wired into the live run
-
-`dev/R_extra/` (`decay_cwd.R`, `impute.R`, `ingest.R`, `run_pipeline.R`, `summarise.R`) and `dev/reference/` hold validated but unused modules and reference code from the earlier implementation, kept for comparison.
-
-### Debris, not yet removed
-
-`dev/run_validate.R` is stale and superseded: it duplicates what `run.R` now does inline, but with the diameter/status logic from before the cycle and AliveState fixes, and it writes to `output/validation_*.csv` rather than the current `output/diagnostics/` location. Running it produces wrong output on the current data. Flagged, not deleted.
 
 ## Outputs
 
