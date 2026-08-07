@@ -18,14 +18,27 @@ Rscript run.R
 Or run any of the eight diagnostics on its own. `date_audit.R`, `cwd_audit.R`, and `plotsummary_audit.R` read `mfedata/` directly and do not need `run.R` first; `stems_annotated.R` needs `run.R`, `mortality_audit.R`, and `date_audit.R` to have already run:
 
 ```
-Rscript diagnostics/run_charts.R
-Rscript diagnostics/run_validate_post.R
-Rscript diagnostics/run_validation_summary.R
-Rscript diagnostics/mortality_audit.R
-Rscript diagnostics/date_audit.R
-Rscript diagnostics/cwd_audit.R
-Rscript diagnostics/plotsummary_audit.R
-Rscript diagnostics/stems_annotated.R
+Execution order from run.R:
+R/coefficients.R
+R/allometry.R
+R/classify.R
+R/expand.R
+R/predict_dbh.R
+R/predict_height.R
+R/validate.R
+R/validate_deep.R
+
+Then the main body runs inline. At the end, diagnostics run in parallel:
+9. diagnostics/run_validate_post.R
+10. diagnostics/run_validation_summary.R
+11. diagnostics/mortality_audit.R
+12. diagnostics/date_audit.R
+13. diagnostics/cwd_audit.R
+14. diagnostics/plotsummary_audit.R
+15. diagnostics/run_charts.R
+
+Then sequentially after the parallel block:
+16. diagnostics/stems_annotated.R
 ```
 
 ## Scripts
