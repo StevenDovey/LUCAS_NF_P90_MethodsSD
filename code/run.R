@@ -4,6 +4,14 @@
 # Inputs (mfedata/): stems CSV, CWD CSV, species.csv, plot_summary.csv.
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 root <- getwd()
+
+#input files in mfedata folder
+f_cwd     <- "MFESensitivity_CWD_20260209_reduced_dblV2.csv"
+f_stems   <- "MFESensitivity_Stems_20260209_reduced_dbl_removed3.csv"
+f_species <- "species.csv"
+f_plots   <- "plot_summary.csv"
+
+
 for (f in c("coefficients.R","allometry.R","classify.R","expand.R","predict_dbh.R",
             "predict_height.R","validate.R","validate_deep.R"))
   source(file.path(root, "R", f))
@@ -15,8 +23,8 @@ rd <- function(name) read.csv(file.path(root, "mfedata", name), stringsAsFactors
 # Dead-wood corrections. Both multipliers apply to both dead pools (standing dead and fallen): the line-intersect sampling correction and the below-ground dead-root uplift each scale both pools, the approach taken to carry the pool uncertainty. Set either to 1 to disable.
 deadwood_factor <- co$cwd_sampling_multiplier * co$cwd_belowground_uplift  # 1.767 * 1.19
 
-sp <- rd("species.csv"); names(sp) <- make.names(names(sp))
-ps <- rd("plot_summary.csv")
+sp  <- rd(f_species); names(sp) <- make.names(names(sp))
+ps  <- rd(f_plots)
 
 # Per-plot inner subplot area and mean annual temperature, from the spreadsheet.
 inner_new <- as.numeric(ps[["Inner plot area new method"]])
@@ -46,7 +54,7 @@ ferns <- c("tree fern","palm","cabbage tree")
 
 # --- live stems -------------------------------------------------------------
 # Status: alive to A, the dead states (including Unknown) to X, anything else to NA. The raw AliveState is kept so validation can flag a blank or unrecognised value and an Unknown-derived death, rather than the row disappearing before validation ever sees it.
-stm <- rd("MFESensitivity_Stems_20260209_reduced_dbl_removed3.csv")
+stm <- rd(f_stems)
 s <- data.frame(plot = stm$ParentPlotName, tag = stm$ItemID,
                 status = ifelse(stm$AliveState == "Alive", "A",
                          ifelse(stm$AliveState %in% c("Dead","Not Found","Unknown"), "X", NA_character_)),
@@ -111,7 +119,7 @@ s$carbon_spars[sx] <- fern_aboveground_carbon(s$dbh[sx], oh[sx], co) * s$dmod[sx
 s$dead_vol[sx]     <- fern_stem_volume(s$dbh[sx], oh[sx], co)
 
 # --- coarse woody debris (fallen), nested-subplot split ---------------------
-cw <- rd("MFESensitivity_CWD_20260209_reduced_dblV2.csv")
+cw  <- rd(f_cwd)
 c2 <- data.frame(plot = cw$ParentPlotName, species_code = cw$PreferredSpeciesCode,
                  decay = as.numeric(cw$DecayClass), len = as.numeric(cw$ItemObsComponentLinearDimension),
                  le1 = as.numeric(cw$LargeEnd1), le2 = as.numeric(cw$LargeEnd2),
