@@ -1,11 +1,9 @@
 #08.06.26 #5
 # End-to-end carbon run. Reads the inputs from mfedata/, fills diameter gaps, predicts height, computes every carbon pool and stem volume, classifies the per-interval fluxes, expands per hectare, summarises to plot, and writes output/plot_carbon_summary.csv. The data-cleaning and validation tables go to output/diagnostics/.
-# Run from the repository root:  Rscript run.R
-# Inputs (mfedata/): stems CSV, CWD CSV, species.csv, plot_summary.csv.
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 root <- getwd()
 
-#input files in mfedata folder
+# Inputs (mfedata/): stems CSV, CWD CSV, species.csv, plot_summary.csv.
 f_cwd     <- "MFESensitivity_CWD_20260209_reduced_dblV2.csv"
 f_stems   <- "MFESensitivity_Stems_20260209_reduced_dbl_removed3.csv"
 f_species <- "species.csv"
