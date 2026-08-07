@@ -2,7 +2,7 @@
 
 ## What this is
 
-An R model of carbon stock and stock change for New Zealand indigenous forest permanent sample plots (PSPs), built from the underlying allometric science rather than ported from the original SAS implementation. Plots are measured across up to three census rounds (2002-2007, 2009 to July 2014, August 2014-2024). The output feeds New Zealand's Emissions Trading Scheme carbon accounting. An earlier SAS-mirroring R port existed under `OLD/`; it is not part of this repository (its history lives only in the original `sas2r` repository, not here) and is not part of the live pipeline.
+An R model of carbon stock and stock change for New Zealand indigenous forest permanent sample plots (PSPs), built from the underlying allometric science rather than ported from the original SAS implementation. Plots are measured across up to three census rounds (2002-2007, 2009 to July 2014, August 2014-2024). The output feeds New Zealand's Emissions Trading Scheme carbon accounting.
 
 ## Running it
 
