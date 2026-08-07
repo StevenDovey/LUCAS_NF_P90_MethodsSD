@@ -1,0 +1,36 @@
+# Large raw inputs and generated outputs — keep local, never commit.
+# (GitHub rejects files >100MB and they bloat history permanently.)
+
+# Input data
+*.csv
+*.xlsx
+MFESensitivity_*
+Species list*.xlsx
+Plot summary*.xlsx
+
+# Generated outputs
+output/
+outputDiag/
+*_R.csv
+plotsummary_*.csv
+measurements_*.csv
+stems_Carbon*.csv
+CWDDecay_*.csv
+ingrowth_*.csv
+
+# Exception: allow small reference outputs for comparison
+!dev/compare/
+!dev/compare/**
+
+# but never data blobs in dev/compare/
+dev/compare/*.zip
+dev/compare/*.csv
+
+# Whitelist generated comparison artifacts
+!results/
+!results/**
+results/stock_by_plot.csv
+results/scatter_stock.png
+results/scatter_flux.png
+results/flux_by_plot.csv
+*.png

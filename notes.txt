@@ -1,0 +1,92 @@
+
+"For each forest type and vintage behind the LUCAS mean carbon curves, the standard deviation (or standard error and plot count) of total plot carbon at each stand age." That gives me everything needed, and the plot count also lets me report a standard error rather than just a standard deviation.
+
+
+On your instruction question: if he says his way is correct, tell me one sentence.
+
+**"Apply both multipliers to both pools: multiply standing dead and fallen each by 1.767 and by 1.19."**
+
+That is all I need. It is a one-line change. Right now the run applies the 1.767 to fallen only and the 1.19 to standing dead only. On that instruction I would set both factors on both pools, so each dead-wood pool is multiplied by 1.767 and by 1.19, which is the original SAS behaviour.
+
+For completeness, the three outcomes and what each tells me:
+- His way is correct: both factors on both pools, as above.
+- My reading is correct: keep the current split, sampling factor on fallen, root uplift on standing dead.
+- Some other split: tell me which factor applies to which pool, and I set them accordingly.
+
+The factors sit as two named variables at the top of `run.R`, so whichever you relay is a quick edit with no other change.
+
+Meanwhile the date-match run is executing, replacing the window approximation with the exact match to each plot's measurement dates, so the logged cycle metric is the original method and will not be flagged in review.
+
+
+
+
+
+
+
+
+grid row NA values
+DBH height histograms
+R over predicting volume?
+grouping charts dead, live, stem
+
+no of ingrowth over 60cm
+
+
+
+sas_vs_r_dbh_mismatch_bands_pct.png
+the acceptable mismatch is <0.5cm 
+so the bin should be below that value, then increments above it.
+
+
+
+sas_vs_r_carbon_fallen.png
+sas_vs_r_carbon_spars.png
+sas_vs_r_carbon_stocks_slide03
+
+All have a jump after changing that line in constants. 
+Has any constant value been applied twice to the calculation???
+
+
+
+Note: Keys are taken from the exported long measurements file (after height). Your in-memory input_visit_keys is built a bit earlier; unless something later drops or adds visits, this should match.
+
+I did not re-run the full SAS2R_final_20260325.R (it needs RStudio’s setwd line and wipes output/). The checks above are on your current saved outputs.
+
+Bottom line: For the artifacts in output/, input_visit_keys would be non-empty and ingrowth_dbh_threshold is doing the right thing for stems without a cycle-1 visit (NA dbh1 and NA threshold, not a fake small DBH). If ingrowth scatter is still off, the next place to look is logic other than empty keys / missing threshold object (e.g. SAS reference file version, or differences in measurements vs measurements_C_R grain).
+
+
+
+
+For each interval (1?2, 2?3, 1?3), a stem is flagged for AGB ingrowth if:
+End-cycle AGB is present and > 0
+End-cycle DBH = 2.5 cm (live-ingrowth size rule)
+Start-cycle effective DBH for the gate is either missing or < 2.5 cm
+That effective value is dbh*_ingrowth_threshold: measured DBH for that cycle if there was a real visit, otherwise NA.
+
+SAS (%summarise_carbon in SAS3cycle.txt) sets AGB ingrowth only, e.g.:
+	if (carbon_AGB2 ne . and carbon_AGB2>0 and dbh2 ge 2.5 and dbh1<2.5) then do;
+	carbon_AGB_ingrowth1_2=carbon_AGB2-carbon_AGB1; *misses 60cm ingrowth?;
+	
+	
+carbon_BGB_ingrowth not in SAS, but in R 
+CWD and Stem volume
+
+
+Possible remaining gap: only that AGB ingrowth amount vs strict SAS subtraction when start AGB is NA in a non-trivial way — worth a targeted check if you need byte-for-byte SAS parity, not a general “ingrowth is still broken.”
+
+will this fix the issue with R predicting and SAS having
+
+
+Cycle assignment investigation (plot_summary.csv vs Stems/CWD dates):
+Digit order confirmed as YYMMDD in plot_summary.csv's "Date 1st/2nd/3rd meas" columns (validated against all 3,106 non-empty values, 0 invalid months/days). Example: 021128 -> 2002-11-28.
+PlotObsStartDate in the Stems/CWD tables is D/M/YYYY text (e.g. 6/03/2021), not YYMMDD. Any shared parsing logic must not assume the two sources share an encoding.
+
+Example - BK92: Date 3rd meas is blank in plot_summary.csv, yet BK92 has 300 real Stems records dated 6/03/2021 (PlotObsStartDate) that belong to cycle 3. That 2021-03-06 date comes from the record's own PlotObsStartDate in the Stems file, not from plot_summary.csv - plot_summary has no 3rd-meas anchor for this plot at all. Nearest-official-year logic misfiles these into cycle 2 (falls back to the 2011 2nd-meas date) because there is nothing to match against for a 3rd cycle. Fixed date-range assignment on the record's own observation date sidesteps this, since it never needs plot_summary's official dates.
+
+
+Fix list (pending implementation):
+1. Cycle assignment corrected to a fixed date range on each record's own observation date, replacing the year-matching logic that caused the BK92 and 2012-2014 plot misclassifications.
+2. Mortality logic verified: a dead stem cannot be counted as a carbon loss more than once. Confirmed by code review AND by data-based proof against output/data_cleaning/stem_diagnostics.csv: mortality_1_2 and mortality_1_3 can carry the same stem's loss value (19,480 of 24,364 stems with 1_2 mortality also show it in 1_3), but these are separate, independently-labeled columns in plot_carbon_summary.csv, never summed into one combined total - matches the SAS reference's own three-column convention (dev/compare/plotsummary_overall_3Cycles_LUCAS_plots.csv).
+3. Carbon output now reports inner and external plot scope as separate columns alongside the combined figures.
+4. Duplicate stem records: previously the whole record was excluded when a duplicate was found; now the more complete record is kept and the duplication is flagged for review.
+5. Stems with an unclear or missing status: previously mishandled without any record of it; now flagged for review rather than silently absorbed.
